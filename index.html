@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Поиск в таблице</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+        }
+        input[type="text"] {
+            width: 300px;
+            padding: 10px;
+            font-size: 18px;
+            border: 2px solid green;
+            border-radius: 5px;
+            margin-bottom: 10px; 
+        }
+        .results {
+            width: 300px;
+            border: 2px solid green;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: white;
+            margin-bottom: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <input type="text" id="search1" oninput="searchColumn(0)" placeholder="Поиск по названиям" />
+        <div id="results1" class="results"></div>
+    </div>
+    <div>
+        <input type="text" id="search2" oninput="searchColumn(2)" placeholder="Поиск по ссылкам" />
+        <div id="results2" class="results"></div>
+    </div>
+
+    <script>
+        let tableData = [];
+        async function fetchData() {
+            const response = await fetch('C:\Users\astbu\Desktop\rr\Фильмы, музыка, книги - Музыка.csv');
+            const data = await response.text();
+            const rows = data.split('\n').slice(1); 
+
+            tableData = rows.map(row => {
+                const columns = row.split(',');
+                return {
+                    column1: columns[0],
+                    column3: columns[2]
+                };
+            });
+        }
+
+        function searchColumn(column) {
+            const input = document.getElementById(`search${column + 1}`).value.toLowerCase();
+            const resultsDiv = document.getElementById(`results${column + 1}`);
+            
+            if (input === '') {
+                resultsDiv.innerHTML = ''; 
+                return;
+            }
+
+            const results = tableData
+                .filter(row => row[`column${column + 1}`] && row[`column${column + 1}`].toLowerCase().includes(input))
+                .map(row => `<div>${row[`column${column + 1}`]}</div>`);
+
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div>Ничего не найдено</div>'; 
+            } else {
+                resultsDiv.innerHTML = results.join('');
+            }
+        }
+
+        window.onload = fetchData; 
+    </script>
+</body>
+</html>
+
