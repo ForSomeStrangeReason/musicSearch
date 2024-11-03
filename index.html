@@ -43,18 +43,25 @@
     <script>
         let tableData = [];
         async function fetchData() {
-            const response = await fetch('Фильмы, музыка, книги - Музыка (2).csv');
-            const data = await response.text();
-            const rows = data.split('\n').slice(1); 
+  const response = await fetch('Фильмы, музыка, книги - Музыка (2).csv'); 
 
-            tableData = rows.map(row => {
-                const columns = row.split(',');
-                return {
-                    column1: columns[0],
-                    column3: columns[2]
-                };
-            });
-        }
+  if (!response.ok) {
+    console.error('Ошибка при загрузке данных:', response.status, response.statusText);
+    return;
+  }
+
+  const text = await response.text();
+  const rows = text.split('\n').map(row => row.trim()).filter(row => row.length > 0);
+  
+  tableData = rows.map(row => {
+    const columns = row.split(',');
+    return {
+      column1: columns[0], 
+      column3: columns[2]  
+    };
+  });
+}
+
 
         function searchColumn(column) {
             const input = document.getElementById(`search${column + 1}`).value.toLowerCase();
