@@ -36,14 +36,14 @@
         <div id="results1" class="results"></div>
     </div>
     <div>
-        <input type="text" id="search2" oninput="searchColumn(2)" placeholder="Поиск по ссылкам" />
+        <input type="text" id="search2" oninput="searchColumn(1)" placeholder="Поиск по ссылкам" />
         <div id="results2" class="results"></div>
     </div>
 
     <script>
         let tableData = [];
         async function fetchData() {
-            const response = await fetch('https://script.google.com/macros/s/AKfycby5hWNOzPmdDiAOECLO3I2mNm2qqzXZT7rWtGJiSUtggQMEfZOuKx4GczF97rbKi0B4pw/exec')
+            const response = await fetch('https://script.google.com/macros/s/AKfycby5hWNOzPmdDiAOECLO3I2mNm2qqzXZT7rWtGJiSUtggQMEfZOuKx4GczF97rbKi0B4pw/exec'); 
 
             if (!response.ok) {
                 console.error('Ошибка при загрузке данных:', response.status, response.statusText);
@@ -52,7 +52,7 @@
 
             const data = await response.json();
             tableData = data.map(row => ({
-                column1: row[0],
+                column1: row[0], 
                 column3: row[2]  
             }));
         }
@@ -67,8 +67,14 @@
             }
 
             const results = tableData
-                .filter(row => row[`column${column + 1}`] && row[`column${column + 1}`].toLowerCase().includes(input))
-                .map(row => `<div>${row[`column${column + 1}`]}</div>`);
+                .filter(row => {
+                    if (column === 0) {
+                        return row.column1 && row.column1.toLowerCase().includes(input); 
+                    } else if (column === 1) {
+                        return row.column3 && row.column3.toLowerCase().includes(input); 
+                    }
+                })
+                .map(row => `<div>${column === 0 ? row.column1 : row.column3}</div>`); 
 
             if (results.length === 0) {
                 resultsDiv.innerHTML = '<div>Ничего не найдено</div>'; 
@@ -81,4 +87,6 @@
     </script>
 </body>
 </html>
+
+
 
