@@ -110,7 +110,6 @@
         }
 
         function parseCSV(csvText) {
-            const rows = csvText.split('\n').map(row => row.split(','));
             tableData = rows.slice(1).map(row => ({
                 column1: row[0],
                 column3: row[2]
