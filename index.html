@@ -110,77 +110,81 @@
         }
 
         function parseCSV(csvText) {
-    const rows = csvText.trim().split('\n').map(row => row.split(',')); 
-    tableData = rows.slice(1).map(row => ({
-        column1: row[0], 
-        column3: row[2]  
-    }));
-    localStorage.setItem('tableData', JSON.stringify(tableData));
-}
+            const rows = csvText.trim().split('\n');
+            tableData = rows.slice(1).map(row => {
+                const columns = row.split(',');
+                return {
+                    column1: columns[0],  
+                    column3: columns[2]   
+                };
+            });
+            localStorage.setItem('tableData', JSON.stringify(tableData));
+        }
 
-function transliterate(text) {
-    const translitMap = {
-        а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z', и: 'i', 
-        й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', 
-        у: 'u', ф: 'f', х: 'h', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch', ы: 'y', э: 'e', 
-        ю: 'yu', я: 'ya', А: 'A', Б: 'B', В: 'V', Г: 'G', Д: 'D', Е: 'E', Ё: 'Yo', Ж: 'Zh', 
-        З: 'Z', И: 'I', Й: 'Y', К: 'K', Л: 'L', М: 'M', Н: 'N', О: 'O', П: 'P', Р: 'R', 
-        С: 'S', Т: 'T', У: 'U', Ф: 'F', Х: 'H', Ц: 'Ts', Ч: 'Ch', Ш: 'Sh', Щ: 'Shch', 
-        Ы: 'Y', Э: 'E', Ю: 'Yu', Я: 'Ya'
-    }
-    return text.split('').map(char => translitMap[char] || char).join('');
-}
+        function transliterate(text) {
+            const translitMap = {
+                а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z', и: 'i', 
+                й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', 
+                у: 'u', ф: 'f', х: 'h', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch', ы: 'y', э: 'e', 
+                ю: 'yu', я: 'ya', А: 'A', Б: 'B', В: 'V', Г: 'G', Д: 'D', Е: 'E', Ё: 'Yo', Ж: 'Zh', 
+                З: 'Z', И: 'I', Й: 'Y', К: 'K', Л: 'L', М: 'M', Н: 'N', О: 'O', П: 'P', Р: 'R', 
+                С: 'S', Т: 'T', У: 'U', Ф: 'F', Х: 'H', Ц: 'Ts', Ч: 'Ch', Ш: 'Sh', Щ: 'Shch', 
+                Ы: 'Y', Э: 'E', Ю: 'Yu', Я: 'Ya'
+            }
+            return text.split('').map(char => translitMap[char] || char).join('');
+        }
 
-function searchColumn(column) {
-    const input = document.getElementById(`search${column + 1}`).value.toLowerCase();
-    const resultsDiv1 = document.getElementById("results1");
-    const resultsDiv2 = document.getElementById("results2");
+        function searchColumn(column) {
+            const input = document.getElementById(`search${column + 1}`).value.toLowerCase();
+            const resultsDiv1 = document.getElementById("results1");
+            const resultsDiv2 = document.getElementById("results2");
 
-    if (input === '') {
-        resultsDiv1.innerHTML = '';
-        resultsDiv2.innerHTML = '';
-        return;
-    }
+            if (input === '') {
+                resultsDiv1.innerHTML = '';
+                resultsDiv2.innerHTML = '';
+                return;
+            }
 
-    const transliteratedInput = transliterate(input);
-    const results = tableData.filter(row => {
-        let columnValue = column === 0 ? row.column1 : row.column3; 
-        return columnValue && (
-            columnValue.toLowerCase().includes(input) || 
-            transliterate(columnValue).toLowerCase().includes(transliteratedInput)
-        );
-    });
+            const transliteratedInput = transliterate(input);
+            const results = tableData.filter(row => {
+                let columnValue = column === 0 ? row.column1 : row.column3;
+                return columnValue && (
+                    columnValue.toLowerCase().includes(input) || 
+                    transliterate(columnValue).toLowerCase().includes(transliteratedInput)
+                );
+            });
 
-    allResults = results;
-    displayResults(results.slice(0, 3), resultsDiv1, resultsDiv2);
+            allResults = results;
+            displayResults(results.slice(0, 3), resultsDiv1, resultsDiv2);
 
-    if (results.length > 3) {
-        resultsDiv1.innerHTML += '<div class="more-btn" onclick="showMoreResults()">...</div>';
-        resultsDiv2.innerHTML += '<div class="more-btn" onclick="showMoreResults()">...</div>';
-    }
-}
+            if (results.length > 3) {
+                resultsDiv1.innerHTML += '<div class="more-btn" onclick="showMoreResults()">...</div>';
+                resultsDiv2.innerHTML += '<div class="more-btn" onclick="showMoreResults()">...</div>';
+            }
+        }
 
-function displayResults(results, resultsDiv1, resultsDiv2) {
-    resultsDiv1.innerHTML = results.length
-        ? results.map(row => `<div>${row.column1}</div>`).join('')
-        : '<div>Ничего не найдено</div>';
+        function displayResults(results, resultsDiv1, resultsDiv2) {
+            resultsDiv1.innerHTML = results.length
+                ? results.map(row => `<div>${row.column1}</div>`).join('')
+                : '<div>Ничего не найдено</div>';
 
-    resultsDiv2.innerHTML = results.length
-        ? results.map(row => `<div><a href="${row.column3}" target="_blank">${row.column3}</a></div>`).join('')
-        : '<div>Ничего не найдено</div>';
-}
+            resultsDiv2.innerHTML = results.length
+                ? results.map(row => `<div><a href="${row.column3}" target="_blank">${row.column3}</a></div>`).join('')
+                : '<div>Ничего не найдено</div>';
+        }
 
-function showMoreResults() {
-    displayResults(allResults, document.getElementById("results1"), document.getElementById("results2"));
-}
+        function showMoreResults() {
+            displayResults(allResults, document.getElementById("results1"), document.getElementById("results2"));
+        }
 
-function clearInput(inputNumber) {
-    document.getElementById(`search${inputNumber}`).value = '';
-    searchColumn(inputNumber - 1); 
-}
+        function clearInput(inputNumber) {
+            document.getElementById(`search${inputNumber}`).value = '';
+            searchColumn(inputNumber - 1); 
+        }
 
-window.onload = fetchData;
-
+        window.onload = fetchData;
     </script>
+
+   
 </body>
 </html>
