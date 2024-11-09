@@ -65,10 +65,10 @@
             }
 
             const data = await response.json();
-            tableData = data.map(row => ({
-                column1: row[0], 
-                column3: row[2]  
-            }));
+            tableData = data.slice(1).map(row => ({
+            column1: row[0],
+            column3: row[2]
+            }))
         }
 
         function transliterate(text) {
