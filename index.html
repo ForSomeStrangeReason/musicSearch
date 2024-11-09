@@ -111,13 +111,14 @@
 
         function parseCSV(csvText) {
             const rows = csvText.trim().split('\n');
-            tableData = rows.slice(1).map(row => {
-                const columns = row.split(',');
-                return {
-                    column1: columns[0],  
-                    column3: columns[2]   
-                };
-            });
+tableData = rows.slice(1).map(row => {
+    const columns = row.split(',');
+
+    return {
+        column1: columns[0]?.trim(),  
+        column3: columns[2]?.trim()   
+    };
+});
             localStorage.setItem('tableData', JSON.stringify(tableData));
         }
 
@@ -168,9 +169,10 @@
                 ? results.map(row => `<div>${row.column1}</div>`).join('')
                 : '<div>Ничего не найдено</div>';
 
-            resultsDiv2.innerHTML = results.length
-                ? results.map(row => `<div><a href="${row.column3}" target="_blank">${row.column3}</a></div>`).join('')
-                : '<div>Ничего не найдено</div>';
+                resultsDiv2.innerHTML = results.length
+    ? results.map(row => row.column3 ? `<div><a href="${row.column3}" target="_blank">${row.column3}</a></div>` : '').join('')
+    : '<div>Ничего не найдено</div>';
+
         }
 
         function showMoreResults() {
