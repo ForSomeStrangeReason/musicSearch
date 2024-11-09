@@ -58,21 +58,33 @@
         let allResults = [];
 
         async function fetchData() {
-            const response = await fetch('https://script.google.com/macros/s/AKfycby5hWNOzPmdDiAOECLO3I2mNm2qqzXZT7rWtGJiSUtggQMEfZOuKx4GczF97rbKi0B4pw/exec'); 
+            const localData = localStorage.getItem('tableData');
+            if (localData) {
+                tableData = JSON.parse(localData);
+                return;
+            }
+
+            const response = await fetch('https://docs.google.com/spreadsheets/d/1xtPPGOo4dvx3ifNf7ZBPKAxmKYMq9b9SMrJgBlyiEWM/export?format=csv');
             if (!response.ok) {
                 console.error('Ошибка при загрузке данных:', response.status, response.statusText);
                 return;
             }
 
-            const data = await response.json();
-            tableData = data.slice(1).map(row => ({
-            column1: row[0],
-            column3: row[2]
-            }))
+            const csvText = await response.text();
+            parseCSV(csvText);
+        }
+
+        function parseCSV(csvText) {
+            const rows = csvText.split('\n').map(row => row.split(','));
+            tableData = rows.slice(1).map(row => ({
+                column1: row[0],
+                column3: row[2]
+            }));
+            localStorage.setItem('tableData', JSON.stringify(tableData));
         }
 
         function transliterate(text) {
-            const translitMap = {
+             const translitMap = {
                 а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z', и: 'i', 
                 й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', 
                 у: 'u', ф: 'f', х: 'h', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch', ы: 'y', э: 'e', 
@@ -83,6 +95,9 @@
             }
             return text.split('').map(char => translitMap[char] || char).join('')
         }
+            
+        
+         
 
         function searchColumn(column) {
             const input = document.getElementById(`search${column + 1}`).value.toLowerCase();
@@ -90,71 +105,54 @@
             const resultsDiv2 = document.getElementById("results2");
 
             if (input === '') {
-             resultsDiv1.innerHTML = ''
-             resultsDiv2.innerHTML = ''
-             resetResultsWidth() 
-             return
+                resultsDiv1.innerHTML = '';
+                resultsDiv2.innerHTML = '';
+                resetResultsWidth();
+                return;
             }
-            const transliteratedInput = transliterate(input)
 
+            const transliteratedInput = transliterate(input);
             const results = tableData.filter(row => {
-                let columnValue
-                if (column === 0) {
-                    columnValue = row.column1
-                } else if (column === 1) {
-                    columnValue = row.column3
-                }
-
+                let columnValue = column === 0 ? row.column1 : row.column3;
                 return columnValue && (
                     columnValue.toLowerCase().includes(input) || 
                     transliterate(columnValue).toLowerCase().includes(transliteratedInput)
-                )
-            })
+                );
+            });
 
-            allResults = results
-
-            displayResults(results.slice(0, 3), resultsDiv1, resultsDiv2)
+            allResults = results;
+            displayResults(results.slice(0, 3), resultsDiv1, resultsDiv2);
 
             if (results.length > 3) {
-                resultsDiv1.innerHTML += '<div class="more-btn" onclick="showMoreResults()">...</div>'
-                resultsDiv2.innerHTML += '<div class="more-btn" onclick="showMoreResults()">...</div>'
+                resultsDiv1.innerHTML += '<div class="more-btn" onclick="showMoreResults()">...</div>';
+                resultsDiv2.innerHTML += '<div class="more-btn" onclick="showMoreResults()">...</div>';
             }
 
-            adjustResultsWidth(results)
+            adjustResultsWidth(results);
         }
 
-        function resetResultsWidth() {
-    document.getElementById('results1').style.width = '80vw'
-    document.getElementById('results2').style.width = '80vw'
-} 
-function displayResults(results, resultsDiv1, resultsDiv2) {
-    resultsDiv1.innerHTML = results.length
-        ? results.map(row => `<div>${row.column1}</div>`).join('')
-        : '<div>Ничего не найдено</div>'
+        function displayResults(results, resultsDiv1, resultsDiv2) {
+            resultsDiv1.innerHTML = results.length
+                ? results.map(row => `<div>${row.column1}</div>`).join('')
+                : '<div>Ничего не найдено</div>';
 
-    resultsDiv2.innerHTML = results.length
-        ? results.map(row => `<div><a href="${row.column3}" target="_blank">${row.column3}</a></div>`).join('')
-        : '<div>Ничего не найдено</div>'
-}
+            resultsDiv2.innerHTML = results.length
+                ? results.map(row => `<div><a href="${row.column3}" target="_blank">${row.column3}</a></div>`).join('')
+                : '<div>Ничего не найдено</div>';
+        }
+
         function adjustResultsWidth(results) {
             const maxLength = Math.max(
                 ...results.map(row => row.column1.length),
                 ...results.map(row => row.column3.length)
-            )
-
-        
-            const width = maxLength *7 + 'px'
-
-    
-            document.getElementById('results1').style.width = width
-            document.getElementById('results2').style.width = width
+            );
         }
 
         function showMoreResults() {
-            displayResults(allResults, document.getElementById("results1"), document.getElementById("results2"))
+            displayResults(allResults, document.getElementById("results1"), document.getElementById("results2"));
         }
 
-        window.onload = fetchData
+        window.onload = fetchData;
     </script>
 </body>
 </html>
