@@ -142,9 +142,9 @@ function normalizeInput(input) {
             });
 
             allResults = results;
-            displayResults(results.slice(0, 3), resultsDiv1, resultsDiv2);
+            displayResults(results.slice(0, 5), resultsDiv1, resultsDiv2);
 
-            if (results.length > 3) {
+            if (results.length > 5) {
                 resultsDiv1.innerHTML += '<div class="more-btn" onclick="showMoreResults()">...</div>';
                 resultsDiv2.innerHTML += '<div class="more-btn" onclick="showMoreResults()">...</div>';
             }
