@@ -34,7 +34,6 @@
             color: #8A6240;
             opacity: 1;
             font-weight: bold;
-
         }
 
         .clear {
@@ -51,14 +50,14 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            width: 80vw;
+            width: 40vw;
             border: 5px solid #8A6240;
             padding: 20px;
             border-radius: 5px;
             background-color: #CABA9C;
             margin-bottom: 20px;
             transition: width 0.3s ease-in-out;
-            margin-left: -50px;
+            margin-left: -819px;
             min-height: calc(5 * 1.25em);
             max-height: calc(5 * 1.25em);
             overflow: hidden;
@@ -104,7 +103,7 @@
             tableData = data.slice(1).map(row => ({
                 column1: row[0],
                 column3: row[2]
-            }))
+            }));
         }
 
         function transliterate(text) {
@@ -117,11 +116,8 @@
                 С: 'S', Т: 'T', У: 'U', Ф: 'F', Х: 'H', Ц: 'Ts', Ч: 'Ch', Ш: 'Sh', Щ: 'Shch',
                 Ы: 'Y', Э: 'E', Ю: 'Yu', Я: 'Ya'
             };
-
-
             text = text.replace(/[-']/g, '');
             text = text.replace(/\s+/g, ' ');
-
             return text.split('').map(char => translitMap[char] || char).join('');
         }
 
@@ -166,7 +162,6 @@
             resultsDiv2.innerHTML = results.length
                 ? results.map(row => row.column3 ? `<div><a href="${row.column3}" target="_blank">${row.column3}</a></div>` : '').join('')
                 : '<div>Ничего не найдено</div>';
-
         }
 
         function showMoreResults() {
@@ -174,13 +169,11 @@
         }
 
         function clearInput(inputNumber) {
-            const input = document.getElementById(`search${inputNumber}`)
-            input.value = ''
-            searchColumn(inputNumber - 1)
-            input.focus()
+            const input = document.getElementById(`search${inputNumber}`);
+            input.value = '';
+            searchColumn(inputNumber - 1);
+            input.focus();
         }
-
-
 
         window.onload = fetchData;
     </script>
