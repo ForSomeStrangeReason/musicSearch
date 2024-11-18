@@ -130,8 +130,7 @@
             return input.replace(/[-']/g, '').replace(/\s+/g, ' ').trim();
         }
 
-        let visibleStartIndex = 0;
-        const RESULTS_PER_PAGE = 5;
+        let isShowingAll = false;
 
         function searchColumn(column) {
             const input = document.getElementById(`search${column + 1}`).value.toLowerCase();
@@ -141,6 +140,9 @@
             if (input === '') {
                 resultsDiv1.innerHTML = '';
                 resultsDiv2.innerHTML = '';
+                isShowingAll = false;
+                adjustResultsHeight(resultsDiv1);
+                adjustResultsHeight(resultsDiv2);
                 return;
             }
 
@@ -155,7 +157,7 @@
                 );
             });
 
-            visibleStartIndex = 0;
+            isShowingAll = false;
             updateVisibleResults();
         }
 
@@ -164,17 +166,20 @@
             const resultsDiv2 = document.getElementById("results2");
 
 
-            const resultsToDisplay = allResults.slice(
-                visibleStartIndex,
-                visibleStartIndex + RESULTS_PER_PAGE
-            );
+            const resultsToDisplay = isShowingAll ? allResults : allResults.slice(0, 5);
+
+
             displayResults(resultsToDisplay, resultsDiv1, resultsDiv2);
 
 
-            if (allResults.length > RESULTS_PER_PAGE) {
-                resultsDiv1.innerHTML += '<div class="more-btn" onclick="showNextResults()">...</div>';
-                resultsDiv2.innerHTML += '<div class="more-btn" onclick="showNextResults()">...</div>';
+            if (allResults.length > 5) {
+                resultsDiv1.innerHTML += '<div class="more-btn" onclick="toggleShowAll()">...</div>';
+                resultsDiv2.innerHTML += '<div class="more-btn" onclick="toggleShowAll()">...</div>';
             }
+
+
+            adjustResultsHeight(resultsDiv1);
+            adjustResultsHeight(resultsDiv2);
         }
 
         function displayResults(results, resultsDiv1, resultsDiv2) {
@@ -187,20 +192,26 @@
                 : '<div>Ничего не найдено</div>';
         }
 
-        function showNextResults() {
-            visibleStartIndex += RESULTS_PER_PAGE;
-
-            if (visibleStartIndex >= allResults.length) {
-                visibleStartIndex = 0;
-            }
+        function toggleShowAll() {
+            isShowingAll = !isShowingAll;
             updateVisibleResults();
         }
+
+        function adjustResultsHeight(resultsDiv) {
+            if (isShowingAll) {
+                resultsDiv.style.maxHeight = 'none';
+            } else {
+                resultsDiv.style.maxHeight = 'calc(5 * 1.25em)';
+            }
+        }
+
         function clearInput(inputNumber) {
             const input = document.getElementById(`search${inputNumber}`);
             input.value = '';
             searchColumn(inputNumber - 1);
             input.focus();
         }
+
         window.onload = fetchData;
     </script>
 </body>
