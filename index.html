@@ -12,7 +12,6 @@
             justify-content: center;
             min-height: 100vh;
             background-color: #CABA9C;
-            overflow: hidden;
         }
 
         .input-wrapper {
@@ -131,6 +130,9 @@
             return input.replace(/[-']/g, '').replace(/\s+/g, ' ').trim();
         }
 
+        let visibleStartIndex = 0;
+        const RESULTS_PER_PAGE = 5;
+
         function searchColumn(column) {
             const input = document.getElementById(`search${column + 1}`).value.toLowerCase();
             const resultsDiv1 = document.getElementById("results1");
@@ -143,20 +145,35 @@
             }
 
             const transliteratedInput = transliterate(input);
-            const results = tableData.filter(row => {
-                let columnValue = column === 0 ? row.column1 : row.column3;
+
+
+            allResults = tableData.filter(row => {
+                const columnValue = column === 0 ? row.column1 : row.column3;
                 return columnValue && (
                     columnValue.toLowerCase().includes(input) ||
                     transliterate(columnValue).toLowerCase().includes(transliteratedInput)
                 );
             });
 
-            allResults = results;
-            displayResults(results.slice(0, 5), resultsDiv1, resultsDiv2);
+            visibleStartIndex = 0;
+            updateVisibleResults();
+        }
 
-            if (results.length > 5) {
-                resultsDiv1.innerHTML += '<div class="more-btn" onclick="showMoreResults()">...</div>';
-                resultsDiv2.innerHTML += '<div class="more-btn" onclick="showMoreResults()">...</div>';
+        function updateVisibleResults() {
+            const resultsDiv1 = document.getElementById("results1");
+            const resultsDiv2 = document.getElementById("results2");
+
+
+            const resultsToDisplay = allResults.slice(
+                visibleStartIndex,
+                visibleStartIndex + RESULTS_PER_PAGE
+            );
+            displayResults(resultsToDisplay, resultsDiv1, resultsDiv2);
+
+
+            if (allResults.length > RESULTS_PER_PAGE) {
+                resultsDiv1.innerHTML += '<div class="more-btn" onclick="showNextResults()">...</div>';
+                resultsDiv2.innerHTML += '<div class="more-btn" onclick="showNextResults()">...</div>';
             }
         }
 
@@ -170,17 +187,20 @@
                 : '<div>Ничего не найдено</div>';
         }
 
-        function showMoreResults() {
-            displayResults(allResults, document.getElementById("results1"), document.getElementById("results2"));
-        }
+        function showNextResults() {
+            visibleStartIndex += RESULTS_PER_PAGE;
 
+            if (visibleStartIndex >= allResults.length) {
+                visibleStartIndex = 0;
+            }
+            updateVisibleResults();
+        }
         function clearInput(inputNumber) {
             const input = document.getElementById(`search${inputNumber}`);
             input.value = '';
             searchColumn(inputNumber - 1);
             input.focus();
         }
-
         window.onload = fetchData;
     </script>
 </body>
