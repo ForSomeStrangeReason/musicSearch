@@ -77,10 +77,32 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        span {
+            font-size: 19px;
+            color: #8A6240;
+        }
+
+        button {
+            border: none;
+            background: transparent;
+            padding: 0;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        span.highlight {
+            background-color: rgb(231, 231, 88);
+            color: black;
+            font-size: inherit;
+            text-transform: inherit;
+
+        }
     </style>
 </head>
 
 <body>
+
     <div class="input-wrapper">
         <input type="text" id="search1" oninput="searchColumn(0)" placeholder="Поиск по названиям" />
         <button class="clear" onclick="clearInput(1)">x</button>
@@ -126,6 +148,7 @@
             return text.split('').map(char => translitMap[char] || char).join('');
         }
 
+
         function normalizeInput(input) {
             return input.replace(/[-']/g, '').replace(/\s+/g, ' ').trim();
         }
@@ -148,7 +171,6 @@
 
             const transliteratedInput = transliterate(input);
 
-
             allResults = tableData.filter(row => {
                 const columnValue = column === 0 ? row.column1 : row.column3;
                 return columnValue && (
@@ -165,31 +187,49 @@
             const resultsDiv1 = document.getElementById("results1");
             const resultsDiv2 = document.getElementById("results2");
 
-
             const resultsToDisplay = isShowingAll ? allResults : allResults.slice(0, 5);
 
-
             displayResults(resultsToDisplay, resultsDiv1, resultsDiv2);
-
 
             if (allResults.length > 5) {
                 resultsDiv1.innerHTML += '<div class="more-btn" onclick="toggleShowAll()">...</div>';
                 resultsDiv2.innerHTML += '<div class="more-btn" onclick="toggleShowAll()">...</div>';
             }
 
-
             adjustResultsHeight(resultsDiv1);
             adjustResultsHeight(resultsDiv2);
         }
 
+        function highlightMatch(text, searchTerm) {
+
+            const regexOriginal = new RegExp(`(${searchTerm})`, 'gi');
+            const regexTransliterated = new RegExp(`(${transliterate(searchTerm)})`, 'gi');
+            let highlightedText = text.replace(regexOriginal, '<span class="highlight">$1</span>');
+            highlightedText = highlightedText.replace(regexTransliterated, '<span class="highlight">$1</span>');
+
+            return highlightedText;
+        }
+
+
         function displayResults(results, resultsDiv1, resultsDiv2) {
             resultsDiv1.innerHTML = results.length
-                ? results.map(row => `<div>${row.column1}</div>`).join('')
+                ? results.map(row => `
+        <div style="display: flex; align-items: center;">
+            <button onclick="window.open('${row.column3}', '_blank')" style="border: none; background: transparent; padding: 0; cursor: pointer;">
+                <span>&#9834;</span> 
+            </button>
+            ${highlightMatch(row.column1, document.getElementById('search1').value)}
+        </div>
+    `).join('')
                 : '<div>Ничего не найдено</div>';
 
-            resultsDiv2.innerHTML = results.length
-                ? results.map(row => row.column3 ? `<div><a href="${row.column3}" target="_blank">${row.column3}</a></div>` : '').join('')
-                : '<div>Ничего не найдено</div>';
+            if (document.getElementById('search1').value === '') {
+                resultsDiv2.innerHTML = results.length
+                    ? results.map(row => row.column3 ? `<div><a href="${row.column3}" target="_blank">${row.column3}</a></div>` : '').join('')
+                    : '<div>Ничего не найдено</div>';
+            } else {
+                resultsDiv2.innerHTML = '';
+            }
         }
 
         function toggleShowAll() {
@@ -197,22 +237,31 @@
             updateVisibleResults();
         }
 
+        function clearInput(fieldNumber) {
+            document.getElementById(`search${fieldNumber}`).value = '';
+            searchColumn(fieldNumber - 1);
+        }
         function adjustResultsHeight(resultsDiv) {
             if (isShowingAll) {
                 resultsDiv.style.maxHeight = 'none';
             } else {
-                resultsDiv.style.maxHeight = 'calc(5 * 1.25em)';
+                resultsDiv.style.maxHeight = 'calc(5 * 1.5em)';
             }
         }
-
-        function clearInput(inputNumber) {
-            const input = document.getElementById(`search${inputNumber}`);
-            input.value = '';
-            searchColumn(inputNumber - 1);
-            input.focus();
-        }
-
         window.onload = fetchData;
+
+
+        window.addEventListener('keydown', function (event) {
+            if (event.key === 'F5') {
+                event.preventDefault();
+                document.getElementById('search1').value = '';
+                document.getElementById('search2').value = '';
+                searchColumn(0);
+                searchColumn(1);
+            }
+        });
+
+
     </script>
 </body>
 
