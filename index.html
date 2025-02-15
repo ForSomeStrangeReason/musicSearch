@@ -79,7 +79,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: normal;
-            display:block;
+            display: block;
         }
 
         span {
@@ -100,7 +100,7 @@
             color: black;
             font-size: inherit;
             text-transform: inherit;
-            
+
         }
     </style>
 </head>
@@ -178,10 +178,13 @@
 
             allResults = tableData.filter(row => {
                 const columnValue = column === 0 ? row.column1 : row.column3;
-                return columnValue && (
-                    columnValue.toLowerCase().includes(input) ||
-                    transliterate(columnValue).toLowerCase().includes(transliteratedInput)
-                );
+                if (!columnValue) return false;
+                
+                const words = columnValue.toLowerCase().split(/\s+/);
+                const transliteratedWords = transliterate(columnValue).toLowerCase().split(/\s+/);
+                
+                return words.some(word => word.startsWith(input)) || 
+                       transliteratedWords.some(word => word.startsWith(transliteratedInput));
             });
 
             isShowingAll = false;
@@ -204,16 +207,33 @@
             adjustResultsHeight(resultsDiv1);
             adjustResultsHeight(resultsDiv2);
         }
-        function highlightMatch(text, searchTerm) {
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
 
+        
+        
+        function highlightMatch(text, searchTerm) {
             if (!searchTerm) return text;
 
-            const regexOriginal = new RegExp(`(${searchTerm})`, 'gi');
-            const regexTransliterated = new RegExp(`(${transliterate(searchTerm)})`, 'gi');
-            let highlightedText = text.replace(regexOriginal, `<mark class="highlight">$1</mark>`);
-            highlightedText = highlightedText.replace(regexTransliterated, `<mark class="highlight">$1</mark>`);
-            return highlightedText;
+            const escapedSearchTerm = escapeRegExp(searchTerm.toLowerCase());
+            const transliteratedSearchTerm = transliterate(searchTerm.toLowerCase());
+
+            const words = text.split(/\s+/);
+            return words.map(word => {
+                const lowerWord = word.toLowerCase();
+                const transliteratedWord = transliterate(lowerWord);
+                
+                if (lowerWord.startsWith(escapedSearchTerm) || 
+                    transliteratedWord.startsWith(transliteratedSearchTerm)) {
+                    return `<span class="highlight">${word}</span>`;
+                }
+                return word;
+            }).join(' ');
         }
+
+
+
 
 
 
